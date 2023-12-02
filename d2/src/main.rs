@@ -14,11 +14,11 @@ fn main() {
     //parsing lines (games)
     for game_line in input.lines() {
         let mut parts = game_line.split(":");
-        let (gameid_str, all_sets_str) = (parts.next().unwrap(), parts.next().unwrap());
+        let gameid_str = parts.next().unwrap(); 
+        let all_sets_str = parts.next().unwrap();
+
         let gameid: u32 = gameid_str.split(" ").nth(1).unwrap().parse().unwrap();
-
         let mut p1_is_valid_game: bool = true;
-
         let mut max_r_draw = 0;
         let mut max_g_draw = 0;
         let mut max_b_draw = 0;
@@ -32,7 +32,9 @@ fn main() {
             //for each set, parsing individual cube draws.
             for w in str.split(",") {
                 let mut parts = w.trim().split(" ");
-                let (count, color) = (parts.next().unwrap().parse::<u32>().unwrap(), parts.next().unwrap());
+
+                let count = parts.next().unwrap().parse::<u32>().unwrap(); 
+                let color = parts.next().unwrap();
 
                 match color {
                     "red" => {
