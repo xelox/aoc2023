@@ -1,4 +1,4 @@
-use std::{env::args, fs, collections::HashMap, u32};
+use std::{env::args, fs, collections::HashMap};
 
 // Searches around the strip number. returns some vector of gears coordinates.
 // If no gears are found but other parts symbols are, it will return some empty vector.
