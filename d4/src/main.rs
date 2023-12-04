@@ -47,7 +47,7 @@ fn main() {
         }
 
         if wins_count > 0 {
-            p1_answer += 1 * (2u32).pow(wins_count as u32 - 1);
+            p1_answer += 1 * 2u32.pow(wins_count as u32 - 1);
         }
 
         scratch_cards.push(ScratchCards::new(wins_count));
