@@ -1,6 +1,5 @@
-use std::{env::args, fs, u32, usize};
+use std::{env::args, fs};
 
-#[derive(Debug)]
 struct ScratchCards {
     instances: usize,
     wins_count: usize,
@@ -70,7 +69,6 @@ fn main() {
     }
 
     let p2_answer = scratch_cards.iter().fold(0usize, |a, sc| a + sc.instances);
-
 
     println!("p1 answer: {p1_answer}");
     println!("p2 answer: {p2_answer}");
