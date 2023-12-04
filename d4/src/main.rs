@@ -1,5 +1,6 @@
-use std::{env::args, fs};
+use std::{env::args, fs, u32, usize};
 
+#[derive(Debug)]
 struct ScratchCards {
     instances: usize,
     wins_count: usize,
@@ -19,7 +20,6 @@ fn main() {
     let input = fs::read_to_string(path).unwrap();
 
     let mut p1_answer: u32 = 0;
-    let mut p2_answer: u32 = 0;
 
     let mut scratch_cards: Vec<ScratchCards> = Vec::new();
      
@@ -54,31 +54,23 @@ fn main() {
         scratch_cards.push(ScratchCards::new(wins_count));
     }
 
-    loop {
-        let mut operations_done = 0;
+    for i in 0..scratch_cards.len() {
+        let sc = &mut scratch_cards[i];
 
-        for i in 0..scratch_cards.len() {
-            let sc = &mut scratch_cards[i];
-
-            if sc.instances == 0 {
-                continue;
-            }
-
-            operations_done += 1;
-            p2_answer += 1;
-
-            sc.instances -= 1; 
-
-            for w in 0..sc.wins_count {
-                let next_card = &mut scratch_cards[i + w + 1];
-                next_card.instances += 1;
-            }
+        if sc.instances == 0 {
+            continue;
         }
 
-        if operations_done == 0 {
-            break;
+        let instances_to_add = sc.instances;
+
+        for w in 0..sc.wins_count {
+            let next_card = &mut scratch_cards[i + w + 1];
+            next_card.instances += instances_to_add;
         }
     }
+
+    let p2_answer = scratch_cards.iter().fold(0usize, |a, sc| a + sc.instances);
+
 
     println!("p1 answer: {p1_answer}");
     println!("p2 answer: {p2_answer}");
