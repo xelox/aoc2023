@@ -54,7 +54,7 @@ fn main() {
     }
 
     for i in 0..scratch_cards.len() {
-        let sc = &mut scratch_cards[i];
+        let sc = &scratch_cards[i];
         let instances_to_add = sc.instances;
 
         for w in 0..sc.wins_count {
