@@ -55,11 +55,6 @@ fn main() {
 
     for i in 0..scratch_cards.len() {
         let sc = &mut scratch_cards[i];
-
-        if sc.instances == 0 {
-            continue;
-        }
-
         let instances_to_add = sc.instances;
 
         for w in 0..sc.wins_count {
