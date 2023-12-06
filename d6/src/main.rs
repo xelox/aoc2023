@@ -15,7 +15,7 @@ fn calculated_n_of_ways(time: &u64, dist: &u64) -> u64 {
 
     //calculating number of ways
     let mut ways = (x1 as u64 + 1).abs_diff(x2 as u64);
-    //adjusting counted ways if x1 (and x2) are integers
+    //adjusting counted ways if x1 (and x2) are not integers
     if (x1 as u64 as f64) < x1 {
         ways += 1;
     }
