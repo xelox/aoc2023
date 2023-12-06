@@ -3,7 +3,7 @@ use std::{env::args, fs, time::Instant};
 fn calculated_n_of_ways(time: &u64, dist: &u64) -> u64 {
     //solving the quadratic equation:
     //fx = (t - x) * x - d 
-    //fx = -x^2 + t - d
+    //fx = -x^2 + tx - d
 
     let a = -1f64;
     let b = *time as f64;
