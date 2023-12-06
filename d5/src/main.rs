@@ -18,40 +18,55 @@ impl AlmanacMap {
     }
 }
 
-fn intersect_ranges(range: &(u64, u64), cutter: &(u64, u64)) -> Option<Vec<(u64, u64)>> {
-    let mut result: Vec<(u64, u64)> = Vec::new();
+#[derive(Clone, Copy)]
+struct RangeDef {
+    start: u64,
+    count: u64,
+}
 
-    let (range_start, range_size) = range;
-    let range_end = range_start + range_size;
+enum IntersectionResult {
+    Partial((RangeDef, RangeDef)),
+    Full,
+    None
+}
 
-    let (cutter_start, cutter_size) = cutter;
-    let cutter_end = cutter_start + cutter_size - 1;
+/** tests one input range against another (cutter)
+if there is a partial overlap will return two new ranges
+the new ranges being the first and the second part of the original range
+the cut being made at the point where the ranges intersect on the input range
+the length of the input range is preseved in the sum of the output ranges
+returns none if no cuts are to be made
+*/
+fn intersect_ranges(input: &RangeDef, cutter: &RangeDef) -> IntersectionResult {
+    let input_end = input.start + input.count;
+    let cutter_end = cutter.start + cutter.count - 1;
 
-    //range inside the cutter range
-    if range_start >= cutter_start && range_end <= cutter_end {
-        return None;
+    //input inside the cutter range
+    if input.start >= cutter.start && input_end <= cutter_end {
+        return IntersectionResult::Full;
     }
 
-    //range partially overlap cutter
-    if range_start <= &cutter_end && range_end >= *cutter_start {
+    //range partially overlaps cutter
+    if input.start <= cutter_end && input_end >= cutter.start {
 
-        let a_start: u64 = *range_start;
+        let a_start: u64 = input.start;
         let b_start: u64;
-        if cutter_start < &a_start {
+        if cutter.start < a_start {
             b_start = cutter_end + 1;
         } else {
-            b_start = *cutter_start;
+            b_start = cutter.start;
         }
         let a_count = b_start - a_start - 1;
-        let b_count = range_size - a_count - 1;
+        let b_count = input.count - a_count - 1;
 
-        result.push( (a_start, a_count) );
-        result.push( (b_start, b_count) );
+        let a = RangeDef{start: a_start, count: a_count};
+        let b = RangeDef{start: b_start, count: b_count};
 
-        return Some(result);
+        return IntersectionResult::Partial((a, b));
     }
 
-    return None;
+    //No overlap
+    return IntersectionResult::None;
 }
 
 fn main() { 
@@ -124,46 +139,58 @@ fn main() {
     //p2 solution
     //for each seed range
     for seeds_sr in seeds.chunks(2) {
-        let mut ranges: Vec<(u64, u64)> = Vec::new();
-        ranges.push((seeds_sr[0], seeds_sr[1]));
-        let mut next_gen_ranges: Vec<(u64, u64)> = Vec::new();
+        let mut ranges: Vec<RangeDef> = Vec::new();
+        ranges.push(RangeDef{start: seeds_sr[0], count: seeds_sr[1]});
+
+        let mut next_gen_ranges_to_shift: Vec<RangeDef> = Vec::with_capacity(100);
+        let mut shifted_next_gen_ranges: Vec<RangeDef> = Vec::with_capacity(100);
 
         for map_set in maps_sets.as_slice() {
-            for range in ranges.as_slice() {
+            for input_range in ranges.as_slice() {
+
                 let mut found_intersection = false;
                 for map in map_set {
-                    let search_intersect = intersect_ranges(&range, &(map.src_start, map.range));
-                    match search_intersect {
-                        Some(new_ranges) => {
-                            next_gen_ranges = [next_gen_ranges, new_ranges].concat();
+                    let cutter = RangeDef{start: map.src_start, count: map.range};
+                    match intersect_ranges(&input_range, &cutter) {
+                        IntersectionResult::Partial((first, second)) => {
+                            next_gen_ranges_to_shift.extend([first, second]);
                             found_intersection = true;
                             break;
                         } 
-                        None => {}
+                        IntersectionResult::Full => {
+                            let next_gen = RangeDef{
+                                start: map.dest_start + input_range.start - map.src_start, 
+                                count: input_range.count,
+                            };
+                            shifted_next_gen_ranges.push(next_gen);
+                            found_intersection = true;
+                            break;
+                        }
+                        IntersectionResult::None => {}
                     }
                 }
                 if !found_intersection {
-                    next_gen_ranges.push(*range);
+                    next_gen_ranges_to_shift.push(*input_range);
                 }
             }
 
-            for ng in next_gen_ranges.iter_mut() {
+            for ng in next_gen_ranges_to_shift.iter_mut() {
                 for map in map_set {
-                    let falls_into_range = ng.0 >= map.src_start && ng.0 < map.src_end;
-                    if falls_into_range {
-                        let diff = ng.0 - map.src_start;
-                        ng.0 = map.dest_start + diff; 
+                    if ng.start >= map.src_start && ng.start < map.src_end {
+                        ng.start = map.dest_start + ng.start - map.src_start;
                         break;
                     }
                 }
             }
-            ranges = next_gen_ranges.clone();
-            next_gen_ranges.clear();
+            next_gen_ranges_to_shift.append(&mut shifted_next_gen_ranges);
+
+            std::mem::swap(&mut ranges, &mut next_gen_ranges_to_shift);
+            next_gen_ranges_to_shift.clear();
         }
 
-        for (range_start, _) in ranges.as_slice() {
-            if range_start < &p2_answer {
-                p2_answer = *range_start;
+        for current_ranges in ranges.as_slice() {
+            if current_ranges.start < p2_answer {
+                p2_answer = current_ranges.start;
             } 
         }
     }
